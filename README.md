@@ -48,7 +48,7 @@ The overall architecture of the project is as follows:
 
 The resulting frontend UI is as follows:
 
-![Frontend UI](imgs/img.png)
+![Frontend UI](imgs/front_ui.png)
 
 ## .gitignore
 
