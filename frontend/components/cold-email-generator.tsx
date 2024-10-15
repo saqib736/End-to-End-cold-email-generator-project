@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { SidebarIcon, X, Copy, Trash2 } from 'lucide-react'
+import { SidebarIcon, X, Copy, Trash2, Plus } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -20,6 +20,7 @@ export default function ColdEmailGenerator() {
   const [error, setError] = useState('')
   const [history, setHistory] = useState<HistoryItem[]>([])
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [selectedHistoryItem, setSelectedHistoryItem] = useState<HistoryItem | null>(null);
 
   useEffect(() => {
     const savedHistory = localStorage.getItem('emailHistory')
@@ -55,8 +56,8 @@ export default function ColdEmailGenerator() {
     localStorage.setItem('emailHistory', JSON.stringify(newHistory))
   }
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(email)
+  const copyToClipboard = (emailToCopy: string) => {
+    navigator.clipboard.writeText(emailToCopy)
   }
 
   const deleteHistoryItem = (id: number) => {
@@ -69,6 +70,10 @@ export default function ColdEmailGenerator() {
     setUrl(item.url)
     setEmail(item.email)
   }
+
+  const viewHistoryItem = (item: HistoryItem) => {
+    setSelectedHistoryItem(item);
+  };
 
   const groupHistoryByDate = () => {
     const now = new Date()
@@ -85,26 +90,19 @@ export default function ColdEmailGenerator() {
   }
 
   const renderHistoryGroup = (items: HistoryItem[], title: string) => {
-    if (items.length === 0) return null
+    if (items.length === 0) return null;
     return (
       <div key={title}>
-        <h3 className="text-sm font-semibold text-gray-500 mb-2">{title}</h3>
+        <h3 className="text-sm font-semibold text-gray-300 mb-2">{title}</h3>
         {items.map((item) => (
-          <Card key={item.id} className="p-4 relative mb-2">
-            <h3 className="font-semibold mb-2 pr-8">{item.url}</h3>
-            <p className="text-sm text-gray-600 truncate">{item.email}</p>
-            <div className="absolute top-2 right-2 flex gap-2">
-              <Button
-                onClick={() => restoreHistoryItem(item)}
-                size="icon"
-                variant="ghost"
-              >
-                <Copy className="h-4 w-4" />
-              </Button>
+          <Card key={item.id} className="p-2 relative mb-2 bg-white/10 text-white">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold truncate flex-grow cursor-pointer" onClick={() => viewHistoryItem(item)}>{item.url}</h3>
               <Button
                 onClick={() => deleteHistoryItem(item.id)}
                 size="icon"
                 variant="ghost"
+                className="text-white hover:text-gray-200"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
@@ -112,10 +110,16 @@ export default function ColdEmailGenerator() {
           </Card>
         ))}
       </div>
-    )
-  }
+    );
+  };
 
   const groupedHistory = groupHistoryByDate()
+
+  const resetEmailGeneration = () => {
+    setSelectedHistoryItem(null);
+    setUrl('');
+    setEmail('');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 to-pink-500 flex">
@@ -126,6 +130,22 @@ export default function ColdEmailGenerator() {
         } transition-transform duration-300 ease-in-out overflow-y-auto`}
       >
         <div className="p-4 space-y-4">
+          <div className="flex justify-between items-center mb-4">
+            <Button
+              onClick={() => setIsSidebarOpen(false)}
+              className="rounded-full bg-white/20 hover:bg-white/30 text-white"
+              size="icon"
+            >
+              <X className="h-6 w-6" />
+            </Button>
+            <Button
+              onClick={resetEmailGeneration}
+              className="rounded-full bg-white/20 hover:bg-white/30 text-white"
+              size="icon"
+            >
+              <Plus className="h-6 w-6" />
+            </Button>
+          </div>
           {renderHistoryGroup(groupedHistory.today, 'Today')}
           {renderHistoryGroup(groupedHistory.yesterday, 'Yesterday')}
           {renderHistoryGroup(groupedHistory.lastWeek, 'Last 7 Days')}
@@ -139,28 +159,37 @@ export default function ColdEmailGenerator() {
           <Card className="w-full max-w-2xl bg-white/90 backdrop-blur-sm shadow-xl">
             <CardContent className="p-6">
               <h1 className="text-3xl font-bold text-center mb-6">Cold Email Generator</h1>
-              <div className="flex gap-2 mb-4">
-                <Input
-                  type="url"
-                  placeholder="Enter website URL"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  className="rounded-full"
-                />
-                <Button
-                  onClick={generateEmail}
-                  disabled={isLoading || !url}
-                  className="rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold px-6"
-                >
-                  {isLoading ? 'Generating...' : 'Generate Email'}
-                </Button>
-              </div>
-              {error && <p className="text-red-500 mb-4">{error}</p>}
-              {email && (
-                <div className="mt-6 bg-gray-100 p-4 rounded-lg relative">
-                  <pre className="whitespace-pre-wrap">{email}</pre>
+              {!selectedHistoryItem && (
+                <div className="flex gap-2 mb-4">
+                  <Input
+                    type="url"
+                    placeholder="Enter website URL"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    className="rounded-full"
+                  />
                   <Button
-                    onClick={copyToClipboard}
+                    onClick={generateEmail}
+                    disabled={isLoading || !url}
+                    className="rounded-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold px-6"
+                  >
+                    {isLoading ? 'Generating...' : 'Generate Email'}
+                  </Button>
+                </div>
+              )}
+              {error && <p className="text-red-500 mb-4">{error}</p>}
+              {(email || selectedHistoryItem) && (
+                <div className="mt-6 bg-gray-100 p-4 rounded-lg relative">
+                  {selectedHistoryItem ? (
+                    <>
+                      <p className="font-semibold mb-2">URL: {selectedHistoryItem.url}</p>
+                      <pre className="whitespace-pre-wrap">{selectedHistoryItem.email}</pre>
+                    </>
+                  ) : (
+                    <pre className="whitespace-pre-wrap">{email}</pre>
+                  )}
+                  <Button
+                    onClick={() => copyToClipboard(selectedHistoryItem ? selectedHistoryItem.email : email)}
                     className="absolute top-2 right-2 rounded-full"
                     size="icon"
                   >
