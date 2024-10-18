@@ -50,22 +50,10 @@ The resulting frontend UI is as follows:
 
 ![Frontend UI](imgs/front_ui.png)
 
-## .gitignore
+## License
 
-The following files are ignored by Git:
+This project is licensed under the MIT License.
 
-* `node_modules/`
-* `.next/`
-* `build/`
-* `.DS_Store`
-* `*.pem`
-* `npm-debug.log*`
-* `yarn-debug.log*`
-* `yarn-error.log*`
-* `.env*.local`
-* `.vercel`
-* `*.tsbuildinfo`
-* `next-env.d.ts`
-* `__pycache__/`
-* `*.pyc`
-* `requirements.txt`
+## Acknowledgments
+
+This project was developed as a learning exercise in applying large language models (LLM) to help Software and AI services companies send cold emails to their potential clients. Special thanks to the open-source community for providing the tools and libraries that made it possible.
